@@ -1,4 +1,0 @@
-include ':owoTrackLib'
-rootProject.name = "owoTrack"
-include ':owoTrackMobile'
-include ':owoTrackWear'
