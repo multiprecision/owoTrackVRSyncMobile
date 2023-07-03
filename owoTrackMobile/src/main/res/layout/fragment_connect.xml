@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Mobile.ui.ConnectFragment"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:context=".Mobile.ui.ConnectFragment">
 
     <TextView
         android:layout_width="match_parent"

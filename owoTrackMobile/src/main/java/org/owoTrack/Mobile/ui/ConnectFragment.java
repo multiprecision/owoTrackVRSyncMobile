@@ -5,9 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +12,8 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import androidx.fragment.app.Fragment;
 
 import org.owoTrack.Mobile.MainActivity;
 import org.owoTrack.Mobile.R;
@@ -28,17 +27,28 @@ import org.owoTrack.TrackingService;
 public class ConnectFragment extends GenericBindingFragment {
 
     final static String CONN_DATA = "CONNECTION_DATA_PREF";
+    Button connect_button = null;
+    EditText ipAddrTxt = null;
+    EditText portTxt = null;
+    CheckBox magBox = null;
+    SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, java.lang.String s) {
+            if (s.equals("ip_address")) {
+                ipAddrTxt.setText(sharedPreferences.getString(s, ""));
+            }
+            if (s.equals("port")) {
+                portTxt.setText(String.valueOf(sharedPreferences.getInt(s, 6969)));
+            }
+        }
+    };
 
-    public static SharedPreferences get_prefs(Context c){
+    public ConnectFragment() {
+    }
+
+    public static SharedPreferences get_prefs(Context c) {
         return c.getSharedPreferences(CONN_DATA, Context.MODE_PRIVATE);
     }
-
-    public SharedPreferences get_prefs(){
-        return get_prefs(getContext());
-    }
-
-
-    public ConnectFragment() {}
 
     public static ConnectFragment newInstance() {
         ConnectFragment fragment = new ConnectFragment();
@@ -47,23 +57,26 @@ public class ConnectFragment extends GenericBindingFragment {
         return fragment;
     }
 
+    public SharedPreferences get_prefs() {
+        return get_prefs(getContext());
+    }
 
     @Override
     protected void onSetStatus(String to) {
-        if(curr_view == null) return;
+        if (curr_view == null) return;
 
         TextView text = curr_view.findViewById(R.id.statusText);
 
-        if(text != null)
+        if (text != null)
             text.setText(to.split("\n")[0]);
     }
 
     @Override
     protected void onConnectionStatus(boolean to) {
-        if(connect_button != null)
+        if (connect_button != null)
             connect_button.setText(to ? "Disconnect" : "Connect");
 
-        if(magBox != null)
+        if (magBox != null)
             magBox.setEnabled(!to);
     }
 
@@ -74,11 +87,6 @@ public class ConnectFragment extends GenericBindingFragment {
 
         super.onDestroy();
     }
-
-    Button connect_button = null;
-    EditText ipAddrTxt = null;
-    EditText portTxt = null;
-    CheckBox magBox = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -91,7 +99,7 @@ public class ConnectFragment extends GenericBindingFragment {
         magBox = curr_view.findViewById(R.id.magnetCheckbox);
 
 
-        if(!MainActivity.hasAnySensorsAtAll()) {
+        if (!MainActivity.hasAnySensorsAtAll()) {
             connect_button.setEnabled(false);
             ipAddrTxt.setEnabled(false);
             portTxt.setEnabled(false);
@@ -99,7 +107,7 @@ public class ConnectFragment extends GenericBindingFragment {
 
             TextView statusText = curr_view.findViewById(R.id.statusText);
             statusText.setText(R.string.sensors_missing_all);
-        }else {
+        } else {
             SharedPreferences prefs = get_prefs();
 
             ipAddrTxt.setText(prefs.getString("ip_address", ""));
@@ -116,31 +124,32 @@ public class ConnectFragment extends GenericBindingFragment {
         return curr_view;
     }
 
-    private String get_ip_address(){
+    private String get_ip_address() {
         String filtered_ip = String.valueOf(ipAddrTxt.getText()).replaceAll("[^0-9\\.]", "");
         ipAddrTxt.setText(filtered_ip);
 
         return filtered_ip;
     }
 
-    private int get_port(){
+    private int get_port() {
         String filtered_port = String.valueOf(portTxt.getText()).replaceAll("[^0-9]", "");
         portTxt.setText(filtered_port);
 
         int val = 6969;
-        try{
+        try {
             val = Integer.parseInt(filtered_port);
-        }catch(NumberFormatException ignored){}
+        } catch (NumberFormatException ignored) {
+        }
 
         return val;
     }
 
-    private boolean get_mag(){
+    private boolean get_mag() {
         return magBox.isChecked();
     }
 
-    private void onConnect(boolean auto){
-        if((service_v != null) && (service_v.is_running())){
+    private void onConnect(boolean auto) {
+        if ((service_v != null) && (service_v.is_running())) {
             onSetStatus("Killing service...");
             Intent intent = new Intent("kill-ze-service");
             getContext().sendBroadcast(intent);
@@ -151,26 +160,26 @@ public class ConnectFragment extends GenericBindingFragment {
         onConnectionStatus(true);
 
         Intent mainIntent = new Intent(getContext(), TrackingService.class);
-        if(auto) {
+        if (auto) {
             mainIntent.putExtra("ipAddrTxt", "255.255.255.255");
-        }else {
+        } else {
             mainIntent.putExtra("ipAddrTxt", get_ip_address());
         }
 
         mainIntent.putExtra("port_no", get_port());
         mainIntent.putExtra("magnetometer", get_mag());
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             getContext().startForegroundService(mainIntent);
-        }else{
+        } else {
             getContext().startService(mainIntent);
         }
     }
 
-    public void save_data(){
-        if(!MainActivity.hasAnySensorsAtAll()) return;
+    public void save_data() {
+        if (!MainActivity.hasAnySensorsAtAll()) return;
 
-        if(ipAddrTxt == null || portTxt == null || magBox == null) return;
+        if (ipAddrTxt == null || portTxt == null || magBox == null) return;
 
         SharedPreferences prefs = get_prefs();
         SharedPreferences.Editor editor = prefs.edit();
@@ -181,16 +190,4 @@ public class ConnectFragment extends GenericBindingFragment {
 
         editor.apply();
     }
-
-    SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, java.lang.String s) {
-            if(s.equals("ip_address")) {
-                ipAddrTxt.setText(sharedPreferences.getString(s, ""));
-            }
-            if(s.equals("port")) {
-                portTxt.setText(String.valueOf(sharedPreferences.getInt(s, 6969)));
-            }
-        }
-    };
 }
