@@ -15,9 +15,9 @@ class HandshakeFailException extends Exception {
     }
 }
 
-public class Handshaker {
+public class HandshakeHandler {
     // Android doesn't allow getting MAC address anymore, so we fake one
-    private static byte[] pseudo_mac = new byte[]{0, 69, 0, 0, 0, 0};
+    private static final byte[] pseudo_mac = new byte[]{0, 0, 0, 0, 0, 0};
 
     private static byte[] getMac() {
         return pseudo_mac;
@@ -43,7 +43,7 @@ public class Handshaker {
 
         final int firmwareBuild = 8;
 
-        final byte[] firmware = {'o', 'w', 'o', 'T', 'r', 'a', 'c', 'k', '8'}; // 9 bytes
+        final byte[] firmware = {'o', 'w', 'o', 'T', 'r', 'a', 'c', 'k', 'X'}; // 9 bytes
 
         buff.putInt(boardType); // 4 bytes
         buff.putInt(imuType);   // 4 bytes
@@ -139,10 +139,10 @@ public class Handshaker {
                         throw new HandshakeFailException("Handshake failed, server did not send an int");
                     }
 
-                    if (version != UDPGyroProviderClient.CURRENT_VERSION) {
+                    if (version != UdpPacketHandler.CURRENT_VERSION) {
                         throw new HandshakeFailException("Handshake failed, mismatching version"
                                 + "\nServer version: " + String.valueOf(version)
-                                + "\nClient version: " + String.valueOf(UDPGyroProviderClient.CURRENT_VERSION)
+                                + "\nClient version: " + String.valueOf(UdpPacketHandler.CURRENT_VERSION)
                                 + "\nPlease make sure everything is up to date.");
                     }
 
@@ -175,15 +175,15 @@ public class Handshaker {
         HandshakeResult() {
         }
 
-        public static Handshaker.HandshakeResult none() {
-            Handshaker.HandshakeResult result = new Handshaker.HandshakeResult();
+        public static HandshakeHandler.HandshakeResult none() {
+            HandshakeHandler.HandshakeResult result = new HandshakeHandler.HandshakeResult();
             result.success = false;
 
             return result;
         }
 
-        public static Handshaker.HandshakeResult some(InetAddress srv, int port, boolean had_to_rediscover) {
-            Handshaker.HandshakeResult result = new Handshaker.HandshakeResult();
+        public static HandshakeHandler.HandshakeResult some(InetAddress srv, int port, boolean had_to_rediscover) {
+            HandshakeHandler.HandshakeResult result = new HandshakeHandler.HandshakeResult();
             result.success = true;
             result.server_address = srv;
             result.port = port;

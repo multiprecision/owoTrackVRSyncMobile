@@ -56,14 +56,13 @@ public abstract class GenericBindingFragment extends Fragment {
                     onSetStatus(data);
                     status_string = data + "\n" + status_string;
                     return;
-                case "cya-ded":
+                case "disconnect":
                     onConnectionStatus(false);
                     return;
-                case "pls-let-me-die":
+                case "reconnect-service":
                     doBinding(false);
                     doBinding(true);
                     // Navigation.findNavController(curr_view).navigateUp();
-                    return;
 
             }
         }
@@ -99,7 +98,7 @@ public abstract class GenericBindingFragment extends Fragment {
         doBinding(true);
 
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(logReceiver, new IntentFilter("info-log"));
-        LocalBroadcastManager.getInstance(getContext()).registerReceiver(logReceiver, new IntentFilter("cya-ded"));
-        LocalBroadcastManager.getInstance(getContext()).registerReceiver(logReceiver, new IntentFilter("pls-let-me-die"));
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(logReceiver, new IntentFilter("disconnect"));
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(logReceiver, new IntentFilter("reconnect-service"));
     }
 }

@@ -81,14 +81,11 @@ public class AutoDiscoverer {
         return DiscoveryResult.none();
     }
 
-    private void plsDoConnect(InetAddress addr, int port) {
+    private void connect(InetAddress addr, int port) {
         Intent mainIntent = new Intent(act, TrackingService.class);
         mainIntent.putExtra("ipAddrTxt", addr.getHostAddress());
         mainIntent.putExtra("port_no", port);
-        mainIntent.putExtra("magnetometer", onConnect.saveAndGetMag(addr.getHostAddress(), port));
-
-
-        // start service
+        onConnect.save(addr.getHostAddress(), port);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             act.startForegroundService(mainIntent);
         } else {
@@ -106,7 +103,7 @@ public class AutoDiscoverer {
 
                 alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        plsDoConnect(addr, port);
+                        connect(addr, port);
                     }
                 });
 
@@ -134,7 +131,7 @@ public class AutoDiscoverer {
     }
 
     public interface ConfigSaver {
-        boolean saveAndGetMag(String ip_addr, int port);
+        void save(String ip_addr, int port);
     }
 
     public static class DiscoveryResult {

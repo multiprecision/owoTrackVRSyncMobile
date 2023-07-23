@@ -42,22 +42,13 @@
             android:paddingTop="4pt">
 
             <androidx.fragment.app.FragmentContainerView
-                android:id="@+id/sensorfragment_gamerotation"
-                android:name="org.owoTrack.Mobile.ui.SensorInfoFragment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:sensorID="@integer/game_rotation_vector"
-                app:sensorName="Rotation Sensor" />
-
-            <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/sensorfragment_georotation"
                 android:name="org.owoTrack.Mobile.ui.SensorInfoFragment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 app:sensorID="@integer/rotation_vector"
-                app:sensorName="Magnetometer" />
+                app:sensorName="TYPE_ROTATION_VECTOR" />
 
 
         </LinearLayout>

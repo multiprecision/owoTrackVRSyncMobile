@@ -23,46 +23,35 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 
-class UDPPackets {
+class UdpPacket {
     static final int HEARTBEAT = 0;
-    static final int ROTATION = 1;
-    static final int GYRO = 2;
     static final int HANDSHAKE = 3;
     static final int ACCEL = 4;
-    static final int MAG = 5;
     static final int RAW_CALIBRATION_DATA = 6;
     static final int CALIBRATION_FINISHED = 7;
     static final int CONFIG = 8;
-    static final int RAW_MAGENTOMETER = 9;
     static final int PING_PONG = 10;
     static final int SERIAL = 11;
     static final int BATTERY_LEVEL = 12;
     static final int TAP = 13;
     static final int RESET_REASON = 14;
     static final int SENSOR_INFO = 15;
-    static final int ROTATION_2 = 16;
     static final int ROTATION_DATA = 17;
-    static final int MAGENTOMETER_ACCURACY = 18;
-
-    static final int BUTTON_PUSHED = 60;
-    static final int SEND_MAG_STATUS = 61;
-    static final int CHANGE_MAG_STATUS = 62;
+    static final int MAGNETOMETER_ACCURACY = 18;
 
 
-    static final int RECIEVE_HEARTBEAT = 1;
+    static final int RECEIVE_HEARTBEAT = 1;
     static final int RECIEVE_VIBRATE = 2;
-    static final int RECIEVE_HANDSHAKE = 3;
-    static final int RECIEVE_COMMAND = 4;
 
 
 }
 
-public class UDPGyroProviderClient {
+public class UdpPacketHandler {
     public final static int CURRENT_VERSION = 5;
     static long last_kill_time = 0;
     final Object retry = new Object();
     Service service;
-    GyroListener listener;
+    SensorListener listener;
     long last_packetsend_time = 0;
     long last_batterysend_time = 0;
     long num_packetsend = 0;
@@ -73,12 +62,10 @@ public class UDPGyroProviderClient {
     Thread retry_thread;
     int failed_in_series = 0;
     long last_error = 0;
-    boolean magMsgWaiting = false;
-    boolean magMsgContents = false;
     private int port_v;
     private InetAddress ip_addr;
     private DatagramSocket socket;
-    private Handshaker.HandshakeResult handshake_result;
+    private HandshakeHandler.HandshakeResult handshake_result;
     private AppStatus status;
     private boolean isConnected = false;
     private Runnable on_connection_death;
@@ -86,7 +73,7 @@ public class UDPGyroProviderClient {
     private ArrayBlockingQueue<DatagramPacket> packets = new ArrayBlockingQueue<DatagramPacket>(64);
     private long packet_id = 0;
 
-    UDPGyroProviderClient(AppStatus status_v, Service s) {
+    UdpPacketHandler(AppStatus status_v, Service s) {
         status = status_v;
 
         service = s;
@@ -163,7 +150,7 @@ public class UDPGyroProviderClient {
     public boolean try_handshake() {
         try {
             status.update("Attempting to connect to server...");
-            handshake_result = Handshaker.try_handshake(socket, ip_addr, port_v);
+            handshake_result = HandshakeHandler.try_handshake(socket, ip_addr, port_v);
         } catch (HandshakeFailException e) {
             e.printStackTrace();
             status.update(e.getMessage());
@@ -318,7 +305,7 @@ public class UDPGyroProviderClient {
 
     private void parse_packet(int msg_type, int msg_len, ByteBuffer buff, boolean recursive) {
         switch (msg_type) {
-            case UDPPackets.RECIEVE_HEARTBEAT: {
+            case UdpPacket.RECEIVE_HEARTBEAT: {
                 // just heartbeat
                 // check if our sensors are working
                 long lastSent = (last_packetsend_time - last_heartbeat_time);
@@ -333,7 +320,7 @@ public class UDPGyroProviderClient {
                 break;
             }
 
-            case UDPPackets.RECIEVE_VIBRATE: {
+            case UdpPacket.RECIEVE_VIBRATE: {
                 // vibrate
                 float duration_s = buff.getFloat();
                 float frequency = buff.getFloat();
@@ -348,14 +335,7 @@ public class UDPGyroProviderClient {
                 break;
             }
 
-            case UDPPackets.CHANGE_MAG_STATUS: {
-                char c = buff.getChar();
-                if (listener != null)
-                    listener.change_realtime_geomagnetic(c == 'y');
-                break;
-            }
-
-            case UDPPackets.PING_PONG: {
+            case UdpPacket.PING_PONG: {
                 sendPacket(buff, msg_len);
                 break;
             }
@@ -371,7 +351,7 @@ public class UDPGyroProviderClient {
                         System.out.println("STILL unknown! " + msg_type);
                         return;
                     }
-                    System.out.println("Flipping endianness..");
+                    System.out.println("Flipping endianness.");
                     buff.order(big_endian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
                     buff.rewind();
                     parse_packet(buff.getInt(), msg_len, buff, true);
@@ -436,7 +416,7 @@ public class UDPGyroProviderClient {
         int len = 12 + 4;
 
         ByteBuffer buff = ByteBuffer.allocate(len);
-        buff.putInt(UDPPackets.BATTERY_LEVEL);
+        buff.putInt(UdpPacket.BATTERY_LEVEL);
         buff.putLong(packet_id++);
         buff.putFloat(battery);
 
@@ -444,10 +424,6 @@ public class UDPGyroProviderClient {
     }    Runnable listen_task = () -> {
         byte[] buffer = new byte[256];
         while (isConnected && !Thread.currentThread().isInterrupted()) {
-            if (magMsgWaiting) {
-                provide_mag_enabled(magMsgContents);
-                magMsgWaiting = false;
-            }
             try {
                 socket.setSoTimeout(250);
                 DatagramPacket p = new DatagramPacket(buffer, 256);
@@ -484,67 +460,57 @@ public class UDPGyroProviderClient {
         }
     };
 
-    private void provide_floats(float[] floats, int len, int msg_type) {
+    public void sendRotationData(float[] quaternionWXYZ) {
+
         if (!isConnected()) return;
 
-        int bytes = 12 + len * 4; // 12b header (int + long)  + floats (4b each)
+        int bytes = 12 + 2 + 4 * 4 + 1; // 12b header (int + long)  + floats (4b each)
 
+		// DATA_TYPE_NORMAL = 1
         ByteBuffer buff = ByteBuffer.allocate(bytes);
-        buff.putInt(msg_type);
+        buff.putInt(UdpPacket.ROTATION_DATA);
         buff.putLong(packet_id);
 
-        for (int i = 0; i < len; i++) {
-            buff.putFloat(floats[i]);
-        }
+        buff.put((byte) 0); // sensorId
+        buff.put((byte) 1); // DATA_TYPE_NORMAL
+        // SlimeVR server format is (x, y, z, w)
+        // Android format is (w, x, y, z)
 
+        buff.putFloat(quaternionWXYZ[1]);
+        buff.putFloat(quaternionWXYZ[2]);
+        buff.putFloat(quaternionWXYZ[3]);
+        buff.putFloat(quaternionWXYZ[0]);
+
+        buff.put((byte) 0); // calibrationInfo
         if (!sendPacket(buff, bytes)) return;
 
         packet_id++;
 
-    }
-
-    public void provide_mag_enabled(boolean enabled) {
-        int len = 12 + 2;
-        if (!isConnected()) {
-            magMsgWaiting = true;
-            magMsgContents = enabled;
-            return;
-        }
-
-        ByteBuffer buff = ByteBuffer.allocate(len);
-        buff.putInt(UDPPackets.SEND_MAG_STATUS);
-        buff.putLong(packet_id++);
-        buff.putChar(enabled ? 'y' : 'n');
-
-        sendPacket(buff, len);
-
-    }
-
-    public void button_pushed() {
-        int len = 12 + 1;
-        ByteBuffer buff = ByteBuffer.allocate(len);
-        buff.putInt(UDPPackets.BUTTON_PUSHED);
-        buff.putLong(packet_id++);
-
-        sendPacket(buff, len);
-    }
-
-    public void provide_gyro(float[] gyro_v) {
-        provide_floats(gyro_v, 3, UDPPackets.GYRO);
-    }
-
-    public void provide_rot(float[] rot_q) {
-        provide_floats(rot_q, 4, UDPPackets.ROTATION);
         num_packetsend++;
         last_packetsend_time = System.currentTimeMillis();
     }
 
     public void provide_accel(float[] accel) {
-        provide_floats(accel, 3, UDPPackets.ACCEL);
+        if (!isConnected()) return;
+
+        int bytes = 12 + 3 * 4 + 1; // 12b header (int + long) + floats (4b each) + sensor ID
+
+        ByteBuffer buff = ByteBuffer.allocate(bytes);
+        buff.putInt(UdpPacket.ACCEL);
+        buff.putLong(packet_id);
+
+        for (int i = 0; i < 3; i++) {
+            buff.putFloat(accel[i]);
+        }
+        buff.put((byte) 0); // sensor ID
+
+        if (!sendPacket(buff, bytes)) return;
+
+        packet_id++;
     }
 
-    public void set_listener(GyroListener gyroListener) {
-        listener = gyroListener;
+    public void set_listener(SensorListener sensorListener) {
+        listener = sensorListener;
     }
 
     public void stop() {
@@ -559,8 +525,5 @@ public class UDPGyroProviderClient {
 
         last_kill_time = System.currentTimeMillis();
     }
-
-
-
 
 }

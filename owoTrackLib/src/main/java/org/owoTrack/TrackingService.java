@@ -30,20 +30,13 @@ public class TrackingService extends Service {
     private final IBinder localBinder = new TrackingBinder();
     Runnable on_death = () -> {
         stopSelf();
-        LocalBroadcastManager.getInstance(TrackingService.this).sendBroadcast(new Intent("pls-let-me-die"));
+        LocalBroadcastManager.getInstance(TrackingService.this).sendBroadcast(new Intent("reconnect-service"));
     };
     boolean ignoreWifi = false;
     ConnectivityManager.NetworkCallback callback = null;
-    private UDPGyroProviderClient client;
+    private UdpPacketHandler client;
     //private long last_screen_time = 0;
-    BroadcastReceiver recenterReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (client != null)
-                client.button_pushed();
-        }
-    };
-    private GyroListener listener;
+    private SensorListener listener;
     private PowerManager.WakeLock wakeLock;
     private String ip_address;
     private AppStatus stat;
@@ -73,15 +66,14 @@ public class TrackingService extends Service {
         Bundle data = intent.getExtras();
         ip_address = data.getString("ipAddrTxt");
         int port_no = data.getInt("port_no");
-        boolean mag = data.getBoolean("magnetometer", true);
 
         System.out.println("Start command");
         foregroundstuff();
 
-        stat = new AppStatus((Service) this);
-        client = new UDPGyroProviderClient(stat, this);
+        stat = new AppStatus(this);
+        client = new UdpPacketHandler(stat, this);
         try {
-            listener = new GyroListener((SensorManager) getSystemService(Context.SENSOR_SERVICE), client, stat, mag);
+            listener = new SensorListener((SensorManager) getSystemService(Context.SENSOR_SERVICE), client, stat);
         } catch (Exception e) {
             stat.update("on GyroListener: " + e.toString());
             on_death.run();
@@ -107,7 +99,7 @@ public class TrackingService extends Service {
             return START_STICKY;
         }
 
-        listener.register_listeners();
+        listener.registerListeners();
 
         String tag = "owoTrackVRSync::BackgroundTrackingSync";
 
@@ -118,8 +110,6 @@ public class TrackingService extends Service {
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag);
         wakeLock.acquire();
-
-        register_recenter_yaw();
 
         ignoreWifi = false;
         lockWifi();
@@ -203,7 +193,7 @@ public class TrackingService extends Service {
     @Override
     public void onDestroy() {
         instance = null;
-        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent("cya-ded"));
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent("disconnect"));
         unlockWifi();
         if (listener != null) {
             Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
@@ -216,7 +206,6 @@ public class TrackingService extends Service {
             wakeLock.release();
 
             unregisterReceiver(broadcastReceiver);
-            unregisterReceiver(recenterReceiver);
 
             if (client != null) {
                 client.stop();
@@ -224,13 +213,6 @@ public class TrackingService extends Service {
             }
         }
 
-    }
-
-    private void register_recenter_yaw() {
-        IntentFilter screenStateFilter = new IntentFilter();
-        screenStateFilter.addAction(Intent.ACTION_SCREEN_ON);
-        //screenStateFilter.addAction(Intent.ACTION_SCREEN_OFF);
-        registerReceiver(recenterReceiver, screenStateFilter);
     }
 
     // stupid foreground stuff

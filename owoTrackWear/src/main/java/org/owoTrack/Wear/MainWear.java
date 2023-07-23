@@ -23,7 +23,7 @@ import android.widget.TextView;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import org.owoTrack.Handshaker;
+import org.owoTrack.HandshakeHandler;
 import org.owoTrack.TrackingService;
 import org.owoTrack.Wear.databinding.ActivityMainwearBinding;
 
@@ -33,7 +33,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public class MainWear extends Activity {
 
     final static String CONN_DATA = "CONNECTION_DATA_PREF";
-    boolean game_rotation_exists;
     boolean norm_rotation_exists;
     boolean connecting;
     boolean connected;
@@ -72,10 +71,10 @@ public class MainWear extends Activity {
                     String data = intent.getStringExtra("message");
                     onSetStatus(data);
                     return;
-                case "cya-ded":
+                case "disconnect":
                     onConnectionStatus(false);
                     return;
-                case "pls-let-me-die":
+                case "reconnect-service":
                     doBinding(false);
                     doBinding(true);
                     return;
@@ -113,14 +112,10 @@ public class MainWear extends Activity {
     private void updateSensorStatus() {
         SensorManager man = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
-        game_rotation_exists = (man.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR) != null);
         norm_rotation_exists = (man.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) != null);
 
         this.runOnUiThread(() -> {
-            binding.gameRotationRadio.setEnabled(game_rotation_exists);
-            binding.magRotationRadio.setEnabled(norm_rotation_exists);
-
-            dead_no_sensors = (!game_rotation_exists) && (!norm_rotation_exists);
+            dead_no_sensors = !norm_rotation_exists;
             if (dead_no_sensors) {
                 binding.yesSensorsLayout.setVisibility(View.GONE);
                 binding.noSensorsLayout.setVisibility(View.VISIBLE);
@@ -163,9 +158,6 @@ public class MainWear extends Activity {
             binding.editIpAddr.setText(prefs.getString("ip", ""));
             binding.editPort.setText(String.valueOf(prefs.getInt("port", 6969)));
             binding.autodiscover.setChecked(prefs.getBoolean("autodiscover", true));
-
-            binding.gameRotationRadio.setChecked(prefs.getBoolean("game-c", false));
-            binding.magRotationRadio.setChecked(prefs.getBoolean("mag-c", false));
         });
     }
 
@@ -180,9 +172,6 @@ public class MainWear extends Activity {
         }
 
         editor.putBoolean("autodiscover", binding.autodiscover.isChecked());
-
-        editor.putBoolean("game-c", binding.gameRotationRadio.isChecked());
-        editor.putBoolean("mag-c", binding.magRotationRadio.isChecked());
 
         editor.apply();
     }
@@ -206,8 +195,8 @@ public class MainWear extends Activity {
 
         doBinding(true);
         LocalBroadcastManager.getInstance(this).registerReceiver(logReceiver, new IntentFilter("info-log"));
-        LocalBroadcastManager.getInstance(this).registerReceiver(logReceiver, new IntentFilter("cya-ded"));
-        LocalBroadcastManager.getInstance(this).registerReceiver(logReceiver, new IntentFilter("pls-let-me-die"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(logReceiver, new IntentFilter("disconnect"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(logReceiver, new IntentFilter("reconnect-service"));
 
         load_prefs();
         onAutodiscoverChanged(null);
@@ -237,26 +226,6 @@ public class MainWear extends Activity {
         });
     }
 
-    private boolean getMagUsage() {
-        boolean use_mag;
-
-        // select the first available sensor that's either checked or is available
-        boolean mag_enabled = binding.magRotationRadio.isChecked();
-        boolean mag_disabled = binding.gameRotationRadio.isChecked();
-        if (!mag_enabled && !mag_disabled) {
-            if (norm_rotation_exists) {
-                binding.magRotationRadio.setChecked(true);
-                use_mag = true;
-            } else {
-                binding.gameRotationRadio.setChecked(true);
-                use_mag = false;
-            }
-        } else {
-            use_mag = mag_enabled;
-        }
-
-        return use_mag;
-    }
 
     private void doBinding(boolean is_bound) {
         if (is_bound) {
@@ -267,14 +236,12 @@ public class MainWear extends Activity {
         }
     }
 
-    private void connect(String ip, int port, boolean mag) {
+    private void connect(String ip, int port) {
         onConnectionStatus(true);
 
         Intent mainIntent = new Intent(this, TrackingService.class);
         mainIntent.putExtra("ipAddrTxt", ip);
         mainIntent.putExtra("port_no", port);
-        mainIntent.putExtra("magnetometer", mag);
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             this.startForegroundService(mainIntent);
         } else {
@@ -295,7 +262,7 @@ public class MainWear extends Activity {
             val = prefs.getLong("FakeMACValueWear", 1);
         }
 
-        Handshaker.setMac(val);
+        HandshakeHandler.setMac(val);
     }
 
     private void runConnectionProcedure() {
@@ -303,12 +270,10 @@ public class MainWear extends Activity {
 
         boolean server_found = false;
         try {
-            boolean use_mag = getMagUsage();
-
             onSetStatus(R.string.searching);
 
             if (isAutoDiscover) {
-                this.connect("255.255.255.255", 6969, use_mag);
+                this.connect("255.255.255.255", 6969);
             } else {
                 Pair<String, Integer> ipPort = getIpPort();
                 if (ipPort.first.length() < 3) {
@@ -317,7 +282,7 @@ public class MainWear extends Activity {
                 }
 
                 server_found = true;
-                this.connect(ipPort.first, ipPort.second, use_mag);
+                this.connect(ipPort.first, ipPort.second);
             }
         } finally {
             connecting_lock.unlock();

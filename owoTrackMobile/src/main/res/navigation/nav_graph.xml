@@ -8,7 +8,7 @@
 
     <fragment
         android:id="@+id/homeMenu"
-        android:name="org.owoTrack.Mobile.ui.homeMenu"
+        android:name="org.owoTrack.Mobile.ui.HomeMenu"
         android:label="fragment_home_menu"
         tools:layout="@layout/fragment_home_menu" />
     <fragment

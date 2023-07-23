@@ -42,42 +42,6 @@
 
 
                     <LinearLayout
-                        android:id="@+id/sensorPickLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:paddingBottom="8dp">
-
-                        <TextView
-                            android:id="@+id/pickSensor"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/sensor_select" />
-
-                        <RadioGroup
-                            android:id="@+id/sensorPicker"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
-
-                            <RadioButton
-                                android:id="@+id/gameRotationRadio"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:minHeight="48dp"
-                                android:text="@string/game_rotation" />
-
-                            <RadioButton
-                                android:id="@+id/magRotationRadio"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:minHeight="48dp"
-                                android:text="@string/mag_rotation" />
-
-                        </RadioGroup>
-                    </LinearLayout>
-
-
-                    <LinearLayout
                         android:id="@+id/connectionLayout"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
