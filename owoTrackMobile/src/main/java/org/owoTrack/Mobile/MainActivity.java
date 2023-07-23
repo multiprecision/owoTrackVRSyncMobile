@@ -3,11 +3,17 @@ package org.owoTrack.Mobile;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
@@ -69,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         HandshakeHandler.setMac(val);
     }
 
-    private boolean connect(String ip, int port) {
+    private void connect(String ip, int port) {
         SharedPreferences prefs = ConnectFragment.get_prefs(this);
         SharedPreferences.Editor editor = prefs.edit();
 
@@ -81,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
 
         contr.navigate(R.id.connectFragment);
 
-        return true;
     }
 
     private void runDiscovery() {
@@ -124,8 +129,21 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), result -> {
+                if (result) {
+                } else {
+                    Toast.makeText(this, "Notification permission for foreground service was not granted.", Toast.LENGTH_LONG).show();
+                }
+            });
+
     @Override
     protected void onResume() {
         super.onResume();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
     }
 }

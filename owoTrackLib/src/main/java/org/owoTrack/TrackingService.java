@@ -22,6 +22,7 @@ import android.os.PowerManager;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -109,7 +110,7 @@ public class TrackingService extends Service {
 
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag);
-        wakeLock.acquire();
+        wakeLock.acquire(Long.MAX_VALUE);
 
         ignoreWifi = false;
         lockWifi();
@@ -124,7 +125,7 @@ public class TrackingService extends Service {
 
                 if (callback == null) {
                     callback = new ConnectivityManager.NetworkCallback() {
-                        public void onAvailable(Network network) {
+                        public void onAvailable(@NonNull Network network) {
                             if (ignoreWifi) return;
 
                             super.onAvailable(network);
@@ -215,7 +216,6 @@ public class TrackingService extends Service {
 
     }
 
-    // stupid foreground stuff
     private void foregroundstuff() {
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
