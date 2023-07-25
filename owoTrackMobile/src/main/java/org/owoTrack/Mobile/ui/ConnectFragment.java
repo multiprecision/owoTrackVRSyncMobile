@@ -8,12 +8,14 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 
 import org.owoTrack.Mobile.MainActivity;
 import org.owoTrack.Mobile.R;
@@ -26,7 +28,6 @@ import org.owoTrack.TrackingService;
  */
 public class ConnectFragment extends GenericBindingFragment {
 
-    final static String CONN_DATA = "CONNECTION_DATA_PREF";
     Button connect_button = null;
     EditText ipAddrTxt = null;
     EditText portTxt = null;
@@ -45,8 +46,8 @@ public class ConnectFragment extends GenericBindingFragment {
     public ConnectFragment() {
     }
 
-    public static SharedPreferences get_prefs(Context c) {
-        return c.getSharedPreferences(CONN_DATA, Context.MODE_PRIVATE);
+    public static SharedPreferences getSharedPreferences(Context c) {
+        return PreferenceManager.getDefaultSharedPreferences(c);
     }
 
     public static ConnectFragment newInstance() {
@@ -56,8 +57,8 @@ public class ConnectFragment extends GenericBindingFragment {
         return fragment;
     }
 
-    public SharedPreferences get_prefs() {
-        return get_prefs(getContext());
+    public SharedPreferences getSharedPreferences() {
+        return getSharedPreferences(getContext());
     }
 
     @Override
@@ -79,7 +80,7 @@ public class ConnectFragment extends GenericBindingFragment {
 
     @Override
     public void onDestroy() {
-        get_prefs().unregisterOnSharedPreferenceChangeListener(listener);
+        getSharedPreferences().unregisterOnSharedPreferenceChangeListener(listener);
         save_data();
 
         super.onDestroy();
@@ -94,8 +95,7 @@ public class ConnectFragment extends GenericBindingFragment {
         ipAddrTxt = curr_view.findViewById(R.id.editIP);
         portTxt = curr_view.findViewById(R.id.editPort);
 
-
-        if (!MainActivity.hasAnySensorsAtAll()) {
+        if (MainActivity.missingRequiredSensor()) {
             connect_button.setEnabled(false);
             ipAddrTxt.setEnabled(false);
             portTxt.setEnabled(false);
@@ -103,7 +103,14 @@ public class ConnectFragment extends GenericBindingFragment {
             TextView statusText = curr_view.findViewById(R.id.statusText);
             statusText.setText(R.string.sensors_missing_all);
         } else {
-            SharedPreferences prefs = get_prefs();
+            SharedPreferences prefs = getSharedPreferences();
+            AutoCompleteTextView sensorTextView = curr_view.findViewById(R.id.input_sensor_type);
+            String[] sensorArray = requireContext().getResources().getStringArray(R.array.sensor_type_dropdown);
+            ArrayAdapter<String> sensorAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, sensorArray);
+            sensorTextView.setAdapter(sensorAdapter);
+            sensorTextView.setOnItemClickListener((parent, view, position, id) -> prefs.edit().putInt("sensor_type", position).apply());
+            int savedSensorType = prefs.getInt("sensor_type", 0);
+            sensorTextView.setText(sensorArray[savedSensorType], false);
 
             ipAddrTxt.setText(prefs.getString("ip_address", ""));
             portTxt.setText(String.valueOf(prefs.getInt("port", 6969)));
@@ -166,11 +173,11 @@ public class ConnectFragment extends GenericBindingFragment {
     }
 
     public void save_data() {
-        if (!MainActivity.hasAnySensorsAtAll()) return;
+        if (MainActivity.missingRequiredSensor()) return;
 
         if (ipAddrTxt == null || portTxt == null) return;
 
-        SharedPreferences prefs = get_prefs();
+        SharedPreferences prefs = getSharedPreferences();
         SharedPreferences.Editor editor = prefs.edit();
 
         editor.putString("ip_address", get_ip_address());

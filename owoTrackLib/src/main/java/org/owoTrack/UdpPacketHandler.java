@@ -10,6 +10,10 @@ import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 
+import androidx.preference.PreferenceManager;
+
+import org.owoTrack.math.Quaternion;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -51,7 +55,6 @@ public class UdpPacketHandler {
     static long last_kill_time = 0;
     final Object retry = new Object();
     Service service;
-    SensorListener listener;
     long last_packetsend_time = 0;
     long last_batterysend_time = 0;
     long num_packetsend = 0;
@@ -165,9 +168,7 @@ public class UdpPacketHandler {
     }
 
     private void save_to_prefs() {
-        final String CONN_DATA = "CONNECTION_DATA_PREF";
-        SharedPreferences prefs = service.getSharedPreferences(CONN_DATA, Context.MODE_PRIVATE);
-
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(service);
         SharedPreferences.Editor editor = prefs.edit();
 
         editor.putString("ip_address", ip_addr.getHostAddress());
@@ -361,7 +362,7 @@ public class UdpPacketHandler {
     }
 
     private boolean flush_packet(int timeout) {
-        DatagramPacket packet = null;
+        DatagramPacket packet;
         if (packets == null) return false;
         try {
             if (timeout > 0) {
@@ -401,7 +402,9 @@ public class UdpPacketHandler {
 
     private boolean sendPacket(ByteBuffer buff, int len) {
         return packets.offer(new DatagramPacket(buff.array(), len, ip_addr, port_v));
-    }    Runnable send_task = () -> {
+    }
+
+    Runnable send_task = () -> {
         while (isConnected && !Thread.currentThread().isInterrupted()) {
             flush_packet(250);
         }
@@ -421,7 +424,9 @@ public class UdpPacketHandler {
         buff.putFloat(battery);
 
         sendPacket(buff, len);
-    }    Runnable listen_task = () -> {
+    }
+
+    Runnable listen_task = () -> {
         byte[] buffer = new byte[256];
         while (isConnected && !Thread.currentThread().isInterrupted()) {
             try {
@@ -466,7 +471,7 @@ public class UdpPacketHandler {
 
         int bytes = 12 + 2 + 4 * 4 + 1; // 12b header (int + long)  + floats (4b each)
 
-		// DATA_TYPE_NORMAL = 1
+        // DATA_TYPE_NORMAL = 1
         ByteBuffer buff = ByteBuffer.allocate(bytes);
         buff.putInt(UdpPacket.ROTATION_DATA);
         buff.putLong(packet_id);
@@ -490,7 +495,36 @@ public class UdpPacketHandler {
         last_packetsend_time = System.currentTimeMillis();
     }
 
-    public void provide_accel(float[] accel) {
+    public void sendRotationData(Quaternion quaternion) {
+
+        if (!isConnected()) return;
+
+        int bytes = 12 + 2 + 4 * 4 + 1; // 12b header (int + long)  + floats (4b each)
+
+        // DATA_TYPE_NORMAL = 1
+        ByteBuffer buff = ByteBuffer.allocate(bytes);
+        buff.putInt(UdpPacket.ROTATION_DATA);
+        buff.putLong(packet_id);
+
+        buff.put((byte) 0); // sensorId
+        buff.put((byte) 1); // DATA_TYPE_NORMAL
+        // SlimeVR server format is (x, y, z, w)
+
+        buff.putFloat(quaternion.x());
+        buff.putFloat(quaternion.y());
+        buff.putFloat(quaternion.z());
+        buff.putFloat(quaternion.w());
+
+        buff.put((byte) 0); // calibrationInfo
+        if (!sendPacket(buff, bytes)) return;
+
+        packet_id++;
+
+        num_packetsend++;
+        last_packetsend_time = System.currentTimeMillis();
+    }
+
+    public void sendAcceleration(float[] accel) {
         if (!isConnected()) return;
 
         int bytes = 12 + 3 * 4 + 1; // 12b header (int + long) + floats (4b each) + sensor ID
@@ -509,14 +543,8 @@ public class UdpPacketHandler {
         packet_id++;
     }
 
-    public void set_listener(SensorListener sensorListener) {
-        listener = sensorListener;
-    }
-
     public void stop() {
         killConnection(false);
-
-        listener = null;
 
         if (socket != null) {
             socket.close();

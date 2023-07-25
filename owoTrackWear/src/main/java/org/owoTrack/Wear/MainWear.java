@@ -17,6 +17,7 @@ import android.net.NetworkRequest;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import androidx.preference.PreferenceManager;
 import android.util.Pair;
 import android.view.View;
 import android.widget.TextView;
@@ -32,7 +33,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class MainWear extends Activity {
 
-    final static String CONN_DATA = "CONNECTION_DATA_PREF";
     boolean norm_rotation_exists;
     boolean connecting;
     boolean connected;
@@ -85,8 +85,8 @@ public class MainWear extends Activity {
     private int debounce_wifi = 0;
     private boolean wifi_acquired = true;
 
-    public static SharedPreferences get_prefs(Context c) {
-        return c.getSharedPreferences(CONN_DATA, Context.MODE_PRIVATE);
+    public static SharedPreferences getSharedPreferences(Context c) {
+        return PreferenceManager.getDefaultSharedPreferences(c);
     }
 
     private void onSetStatus(String to) {
@@ -126,8 +126,8 @@ public class MainWear extends Activity {
         });
     }
 
-    public SharedPreferences get_prefs() {
-        return get_prefs(this);
+    public SharedPreferences getSharedPreferences() {
+        return getSharedPreferences(this);
     }
 
     private void onAutodiscoverChanged(View view) {
@@ -152,7 +152,7 @@ public class MainWear extends Activity {
     }
 
     private void load_prefs() {
-        SharedPreferences prefs = get_prefs();
+        SharedPreferences prefs = getSharedPreferences();
 
         this.runOnUiThread(() -> {
             binding.editIpAddr.setText(prefs.getString("ip", ""));
@@ -162,7 +162,7 @@ public class MainWear extends Activity {
     }
 
     private void save_prefs() {
-        SharedPreferences prefs = get_prefs();
+        SharedPreferences prefs = getSharedPreferences();
         SharedPreferences.Editor editor = prefs.edit();
 
         editor.putString("ip", String.valueOf(binding.editIpAddr.getText()));

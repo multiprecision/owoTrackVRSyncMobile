@@ -24,18 +24,21 @@ import org.owoTrack.AutoDiscoverer;
 import org.owoTrack.HandshakeHandler;
 import org.owoTrack.Mobile.ui.ConnectFragment;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity {
 
-    public static boolean[] sensor_exist;
+    public static Map<String, Boolean> sensorExist = new HashMap<>();
     public static NavController contr;
     private static String missingSensorMessage = "";
 
-    public static boolean getSensorExists(int sensor) {
-        return sensor_exist[sensor];
+    public static boolean getSensorExists(String type) {
+        return Boolean.TRUE.equals(sensorExist.get(type));
     }
 
-    public static boolean hasAnySensorsAtAll() {
-        return getSensorExists(0);
+    public static boolean missingRequiredSensor() {
+        return !getSensorExists("TYPE_ROTATION_VECTOR") && !getSensorExists("TYPE_GAME_ROTATION_VECTOR");
     }
 
     public static String getSensorText() {
@@ -45,15 +48,16 @@ public class MainActivity extends AppCompatActivity {
     private void fillSensorArray() {
         SensorManager man = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
-        sensor_exist = new boolean[2];
-
-        sensor_exist[0] = (man.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) != null);
-
-        sensor_exist[1] = (man.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null);
+        sensorExist.put("TYPE_ROTATION_VECTOR", man.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) != null);
+        sensorExist.put("TYPE_GAME_ROTATION_VECTOR", man.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR) != null);
+        sensorExist.put("TYPE_LINEAR_ACCELERATION", man.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null);
+        sensorExist.put("TYPE_GYROSCOPE", man.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null);
+        sensorExist.put("TYPE_ACCELEROMETER", man.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null);
+        sensorExist.put("TYPE_MAGNETIC_FIELD", man.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null);
 
         missingSensorMessage = "";
 
-        if (!hasAnySensorsAtAll()) {
+        if (missingRequiredSensor()) {
             missingSensorMessage = getString(R.string.sensors_missing_all);
         }
 
@@ -76,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void connect(String ip, int port) {
-        SharedPreferences prefs = ConnectFragment.get_prefs(this);
+        SharedPreferences prefs = ConnectFragment.getSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
 
         editor.putString("ip_address", ip);
@@ -90,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void runDiscovery() {
-        if (!hasAnySensorsAtAll()) return;
+        if (missingRequiredSensor()) return;
         if (!AutoDiscoverer.discoveryStillNecessary) return;
 
         try {

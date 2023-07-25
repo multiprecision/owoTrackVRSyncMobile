@@ -12,17 +12,17 @@ import org.owoTrack.Mobile.R;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link debugLogFragment#newInstance} factory method to
+ * Use the {@link DebugLogFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class debugLogFragment extends GenericBindingFragment {
+public class DebugLogFragment extends GenericBindingFragment {
     AppStatus stat;
 
-    public debugLogFragment() {
+    public DebugLogFragment() {
     }
 
-    public static debugLogFragment newInstance() {
-        debugLogFragment fragment = new debugLogFragment();
+    public static DebugLogFragment newInstance() {
+        DebugLogFragment fragment = new DebugLogFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;

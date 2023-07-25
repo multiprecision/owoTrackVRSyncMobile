@@ -46,4 +46,7 @@ dependencies {
     implementation("androidx.navigation:navigation-dynamic-features-fragment:$nav_version")
 
     implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
+
+    implementation("androidx.preference:preference:1.2.0")
+    implementation("com.github.KalebKE:FSensor:v2.2")
 }

@@ -18,7 +18,7 @@
         tools:layout="@layout/fragment_connect" />
     <fragment
         android:id="@+id/debugLogFragment2"
-        android:name="org.owoTrack.Mobile.ui.debugLogFragment"
+        android:name="org.owoTrack.Mobile.ui.DebugLogFragment"
         android:label="fragment_debug_log"
         tools:layout="@layout/fragment_debug_log" />
 </navigation>

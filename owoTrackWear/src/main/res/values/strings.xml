@@ -24,4 +24,5 @@
     <string name="connection">Connection</string>
     <string name="port">Port</string>
     <string name="you_will_be_automatically_connected_to_wifi">You will be automatically connected to WiFi</string>
+
 </resources>

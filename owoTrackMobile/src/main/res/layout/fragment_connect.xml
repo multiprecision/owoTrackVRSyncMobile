@@ -7,38 +7,87 @@
     tools:context=".Mobile.ui.ConnectFragment">
 
     <TextView
+        style="?attr/textAppearanceBodyMedium"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginVertical="8dp"
         android:text="Enter the IP and port, then connect." />
 
-    <EditText
-        android:id="@+id/editIP"
+    <TextView
+        style="?attr/textAppearanceBodySmall"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="IP address"
-        android:inputType="textNoSuggestions"
-        android:text="" />
+        android:layout_marginTop="8dp"
+        android:text="IP Address" />
 
-    <EditText
-        android:id="@+id/editPort"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/editIP"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textNoSuggestions"
+            android:text="" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        style="?attr/textAppearanceBodySmall"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="Port"
-        android:inputType="number"
-        android:text="6969" />
+        android:layout_marginTop="8dp"
+        android:text="Port" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/editPort"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="number"
+            android:text="6969" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        style="?attr/textAppearanceBodySmall"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Sensor Type" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_layout_sensor_type"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <AutoCompleteTextView
+            android:id="@+id/input_sensor_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/connectButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginVertical="8dp"
         android:text="Connect" />
 
     <TextView
         android:id="@+id/statusText"
+        style="?attr/textAppearanceBodyMedium"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginVertical="8dp"
         android:text="Status will appear here" />
 
 </LinearLayout>

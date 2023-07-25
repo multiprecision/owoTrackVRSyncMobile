@@ -35,7 +35,7 @@ public class HomeMenu extends Fragment {
         TextView sensorWarning = v.findViewById(R.id.sensorWarningTextView);
         sensorWarning.setText(MainActivity.getSensorText());
 
-        if (!MainActivity.hasAnySensorsAtAll()) {
+        if (MainActivity.missingRequiredSensor()) {
             TextView sleepWarning = v.findViewById(R.id.sleepWarningText);
             sleepWarning.setText("");
             autoConnectButton.setVisibility(View.GONE);

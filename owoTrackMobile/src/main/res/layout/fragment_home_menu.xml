@@ -42,15 +42,53 @@
             android:paddingTop="4pt">
 
             <androidx.fragment.app.FragmentContainerView
-                android:id="@+id/sensorfragment_georotation"
+                android:id="@+id/fragment_type_rotation_vector"
                 android:name="org.owoTrack.Mobile.ui.SensorInfoFragment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                app:sensorID="@integer/rotation_vector"
                 app:sensorName="TYPE_ROTATION_VECTOR" />
 
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/fragment_type_game_rotation_vector"
+                android:name="org.owoTrack.Mobile.ui.SensorInfoFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:sensorName="TYPE_GAME_ROTATION_VECTOR" />
 
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/fragment_type_linear_acceleration"
+                android:name="org.owoTrack.Mobile.ui.SensorInfoFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:sensorName="TYPE_LINEAR_ACCELERATION" />
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/fragment_type_gyroscope"
+                android:name="org.owoTrack.Mobile.ui.SensorInfoFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:sensorName="TYPE_GYROSCOPE" />
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/fragment_type_accelerometer"
+                android:name="org.owoTrack.Mobile.ui.SensorInfoFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:sensorName="TYPE_ACCELEROMETER" />
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/fragment_type_magnetic_field"
+                android:name="org.owoTrack.Mobile.ui.SensorInfoFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:sensorName="TYPE_MAGNETIC_FIELD" />
         </LinearLayout>
 
 

@@ -46,9 +46,10 @@ public abstract class GenericBindingFragment extends Fragment {
             onConnectionStatus(false);
         }
     };
-    private BroadcastReceiver logReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver logReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (intent.getAction() == null) return;
             switch (intent.getAction()) {
                 case "info-log":
                     onConnectionStatus(true);
@@ -63,7 +64,7 @@ public abstract class GenericBindingFragment extends Fragment {
                     doBinding(false);
                     doBinding(true);
                     // Navigation.findNavController(curr_view).navigateUp();
-
+                default:
             }
         }
     };
@@ -84,7 +85,7 @@ public abstract class GenericBindingFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (!MainActivity.hasAnySensorsAtAll()) return;
+        if (MainActivity.missingRequiredSensor()) return;
         doBinding(false);
         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(logReceiver);
     }
@@ -93,7 +94,7 @@ public abstract class GenericBindingFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (!MainActivity.hasAnySensorsAtAll()) return;
+        if (MainActivity.missingRequiredSensor()) return;
 
         doBinding(true);
 

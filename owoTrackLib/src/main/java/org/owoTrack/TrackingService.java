@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.hardware.SensorManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -21,6 +22,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import androidx.preference.PreferenceManager;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -37,7 +39,7 @@ public class TrackingService extends Service {
     ConnectivityManager.NetworkCallback callback = null;
     private UdpPacketHandler client;
     //private long last_screen_time = 0;
-    private SensorListener listener;
+    private SensorDataProvider sensorDataProvider;
     private PowerManager.WakeLock wakeLock;
     private String ip_address;
     private AppStatus stat;
@@ -73,14 +75,30 @@ public class TrackingService extends Service {
 
         stat = new AppStatus(this);
         client = new UdpPacketHandler(stat, this);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        int sensorType = preferences.getInt("sensor_type", 0);
+        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         try {
-            listener = new SensorListener((SensorManager) getSystemService(Context.SENSOR_SERVICE), client, stat);
+            switch (sensorType) {
+                default:
+                case 0:
+                    sensorDataProvider = new RotationVectorSensorDataProvider(sensorManager, client, stat);
+                    break;
+                case 1:
+                    sensorDataProvider = new GameRotationVectorSensorDataProvider(sensorManager, client, stat);
+                    break;
+                case 2:
+                    sensorDataProvider = new ImprovedRotationVector1SensorDataProvider(sensorManager, client, stat);
+                    break;
+                case 3:
+                    sensorDataProvider = new FSensorComplementaryGyroscopeSensorDataProvider(getApplicationContext(), sensorManager, client, stat);
+                    break;
+            }
         } catch (Exception e) {
-            stat.update("on GyroListener: " + e.toString());
+            stat.update("on GyroListener: " + e);
             on_death.run();
             return START_STICKY;
         }
-
 
         try {
             Thread thread = new Thread(() -> {
@@ -100,7 +118,7 @@ public class TrackingService extends Service {
             return START_STICKY;
         }
 
-        listener.registerListeners();
+        sensorDataProvider.register();
 
         String tag = "owoTrackVRSync::BackgroundTrackingSync";
 
@@ -196,14 +214,14 @@ public class TrackingService extends Service {
         instance = null;
         LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent("disconnect"));
         unlockWifi();
-        if (listener != null) {
+        if (sensorDataProvider != null) {
             Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 v.vibrate(VibrationEffect.createOneShot((long) (200), (int) (255)));
             } else {
                 v.vibrate(200);
             }
-            listener.stop();
+            sensorDataProvider.unregister();
             wakeLock.release();
 
             unregisterReceiver(broadcastReceiver);

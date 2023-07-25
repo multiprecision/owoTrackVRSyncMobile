@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "org.ovrgyrotrackersync"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 33
         versionCode = 19
         versionName = "9.7"
@@ -49,6 +49,7 @@ dependencies {
 
     implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
 
+    implementation("androidx.preference:preference:1.2.0")
 
     implementation(project(":owoTrackLib"))
 }
