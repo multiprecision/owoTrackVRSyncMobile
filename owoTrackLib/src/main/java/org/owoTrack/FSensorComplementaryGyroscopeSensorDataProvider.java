@@ -3,19 +3,10 @@ package org.owoTrack;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Handler;
 
-import com.kircherelectronics.fsensor.filter.gyroscope.fusion.OrientationFused;
-import com.kircherelectronics.fsensor.filter.gyroscope.fusion.complementary.OrientationFusedComplementary;
 import com.kircherelectronics.fsensor.observer.SensorSubject;
-import com.kircherelectronics.fsensor.sensor.FSensor;
-import com.kircherelectronics.fsensor.sensor.gyroscope.ComplementaryGyroscopeSensor;
-import com.kircherelectronics.fsensor.util.angle.AngleUtils;
-import com.kircherelectronics.fsensor.util.rotation.RotationUtil;
-
-import org.owoTrack.math.Quaternion;
 
 public class FSensorComplementaryGyroscopeSensorDataProvider implements SensorDataProvider {
     UdpPacketHandler udpClient;
@@ -70,21 +61,4 @@ public class FSensorComplementaryGyroscopeSensorDataProvider implements SensorDa
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 }
-
-
-/*
- * Copyright 2018, Kircher Electronics, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 

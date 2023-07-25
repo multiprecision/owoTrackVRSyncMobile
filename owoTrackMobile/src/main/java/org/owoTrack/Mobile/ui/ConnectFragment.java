@@ -111,6 +111,7 @@ public class ConnectFragment extends GenericBindingFragment {
             sensorTextView.setOnItemClickListener((parent, view, position, id) -> prefs.edit().putInt("sensor_type", position).apply());
             int savedSensorType = prefs.getInt("sensor_type", 0);
             sensorTextView.setText(sensorArray[savedSensorType], false);
+            sensorTextView.setThreshold(Integer.MAX_VALUE);
 
             ipAddrTxt.setText(prefs.getString("ip_address", ""));
             portTxt.setText(String.valueOf(prefs.getInt("port", 6969)));

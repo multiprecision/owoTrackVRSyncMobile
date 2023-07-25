@@ -17,7 +17,8 @@
     <string-array name="sensor_type_dropdown">
         <item>TYPE_ROTATION_VECTOR</item>
         <item>TYPE_GAME_ROTATION_VECTOR</item>
-        <item>Alexander Pacha\'s Improved Orientation Sensor 1 (TYPE_ROTATION_VECTOR and TYPE_GYROSCOPE)</item>
         <item>FSensor Complementary Gyroscope Sensor (TYPE_GYROSCOPE, TYPE_ACCELEROMETER, and TYPE_MAGNETIC_FIELD)</item>
+        <item>FSensor Kalman Gyroscope Sensor (TYPE_GYROSCOPE, TYPE_ACCELEROMETER, and TYPE_MAGNETIC_FIELD)</item>
+        <item>Madgwick Filter (TYPE_GYROSCOPE, TYPE_ACCELEROMETER, and TYPE_MAGNETIC_FIELD)</item>
     </string-array>
 </resources>

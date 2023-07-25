@@ -12,8 +12,6 @@ import android.os.Vibrator;
 
 import androidx.preference.PreferenceManager;
 
-import org.owoTrack.math.Quaternion;
-
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -485,35 +483,6 @@ public class UdpPacketHandler {
         buff.putFloat(quaternionWXYZ[2]);
         buff.putFloat(quaternionWXYZ[3]);
         buff.putFloat(quaternionWXYZ[0]);
-
-        buff.put((byte) 0); // calibrationInfo
-        if (!sendPacket(buff, bytes)) return;
-
-        packet_id++;
-
-        num_packetsend++;
-        last_packetsend_time = System.currentTimeMillis();
-    }
-
-    public void sendRotationData(Quaternion quaternion) {
-
-        if (!isConnected()) return;
-
-        int bytes = 12 + 2 + 4 * 4 + 1; // 12b header (int + long)  + floats (4b each)
-
-        // DATA_TYPE_NORMAL = 1
-        ByteBuffer buff = ByteBuffer.allocate(bytes);
-        buff.putInt(UdpPacket.ROTATION_DATA);
-        buff.putLong(packet_id);
-
-        buff.put((byte) 0); // sensorId
-        buff.put((byte) 1); // DATA_TYPE_NORMAL
-        // SlimeVR server format is (x, y, z, w)
-
-        buff.putFloat(quaternion.x());
-        buff.putFloat(quaternion.y());
-        buff.putFloat(quaternion.z());
-        buff.putFloat(quaternion.w());
 
         buff.put((byte) 0); // calibrationInfo
         if (!sendPacket(buff, bytes)) return;

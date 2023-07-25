@@ -88,10 +88,13 @@ public class TrackingService extends Service {
                     sensorDataProvider = new GameRotationVectorSensorDataProvider(sensorManager, client, stat);
                     break;
                 case 2:
-                    sensorDataProvider = new ImprovedRotationVector1SensorDataProvider(sensorManager, client, stat);
+                    sensorDataProvider = new FSensorComplementaryGyroscopeSensorDataProvider(getApplicationContext(), sensorManager, client, stat);
                     break;
                 case 3:
-                    sensorDataProvider = new FSensorComplementaryGyroscopeSensorDataProvider(getApplicationContext(), sensorManager, client, stat);
+                    sensorDataProvider = new FSensorKalmanGyroscopeSensorDataProvider(getApplicationContext(), sensorManager, client, stat);
+                    break;
+                case 4:
+                    sensorDataProvider = new MadgwickSensorDataProvider(getApplicationContext(), sensorManager, client, stat);
                     break;
             }
         } catch (Exception e) {
