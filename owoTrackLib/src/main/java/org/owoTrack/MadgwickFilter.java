@@ -1,21 +1,12 @@
 package org.owoTrack;
 
 public class MadgwickFilter {
-    private float sampleFrequency; // in Hz
-    private float beta;
+    private float beta; // algorithm gain
 
     public float q0 = 1.0f;
     public float q1 = 0.0f;
     public float q2 = 0.0f;
     public float q3 = 0.0f;
-
-    public float getSampleFrequency() {
-        return sampleFrequency;
-    }
-
-    public void setSampleFrequency(float sampleFrequency) {
-        this.sampleFrequency = sampleFrequency;
-    }
 
     public float getBeta() {
         return beta;
@@ -25,12 +16,7 @@ public class MadgwickFilter {
         this.beta = beta;
     }
 
-    public MadgwickFilter(float sampleFrequency) {
-        this(sampleFrequency, 0.1f);
-    }
-
-    public MadgwickFilter(float sampleFrequency, float beta) {
-        this.sampleFrequency = sampleFrequency;
+    public MadgwickFilter(float beta) {
         this.beta = beta;
     }
 
@@ -47,7 +33,7 @@ public class MadgwickFilter {
      * @param mz Magnetometer z axis measurement in any calibrated units.
      */
     public void update(float gx, float gy, float gz, float ax, float ay,
-                       float az, float mx, float my, float mz) {
+                       float az, float mx, float my, float mz, float dt) {
         float recipNorm;
         float s0, s1, s2, s3;
         float qDot1, qDot2, qDot3, qDot4;
@@ -56,7 +42,7 @@ public class MadgwickFilter {
 
         // Use IMU algorithm if magnetometer measurement invalid (avoids NaN in magnetometer normalisation)
         if ((mx == 0.0f) && (my == 0.0f) && (mz == 0.0f)) {
-            update(gx, gy, gz, ax, ay, az);
+            update(gx, gy, gz, ax, ay, az, dt);
             return;
         }
 
@@ -130,10 +116,10 @@ public class MadgwickFilter {
         }
 
         // Integrate rate of change of quaternion to yield quaternion
-        q0 += qDot1 * (1.0f / sampleFrequency);
-        q1 += qDot2 * (1.0f / sampleFrequency);
-        q2 += qDot3 * (1.0f / sampleFrequency);
-        q3 += qDot4 * (1.0f / sampleFrequency);
+        q0 += qDot1 * dt;
+        q1 += qDot2 * dt;
+        q2 += qDot3 * dt;
+        q3 += qDot4 * dt;
 
         // Normalise quaternion
         recipNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
@@ -144,7 +130,7 @@ public class MadgwickFilter {
     }
 
 
-    void update(float gx, float gy, float gz, float ax, float ay, float az) {
+    void update(float gx, float gy, float gz, float ax, float ay, float az, float dt) {
         float recipNorm;
         float s0, s1, s2, s3;
         float qDot1, qDot2, qDot3, qDot4;
@@ -199,10 +185,10 @@ public class MadgwickFilter {
         }
 
         // Integrate rate of change of quaternion to yield quaternion
-        q0 += qDot1 * (1.0f / sampleFrequency);
-        q1 += qDot2 * (1.0f / sampleFrequency);
-        q2 += qDot3 * (1.0f / sampleFrequency);
-        q3 += qDot4 * (1.0f / sampleFrequency);
+        q0 += qDot1 * dt;
+        q1 += qDot2 * dt;
+        q2 += qDot3 * dt;
+        q3 += qDot4 * dt;
 
         // Normalise quaternion
         recipNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);

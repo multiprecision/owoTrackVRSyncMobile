@@ -55,7 +55,7 @@ public class MadgwickSensorDataProvider implements SensorDataProvider {
         }
     };
 
-    private MadgwickFilter madgwick = new MadgwickFilter(100, 0.00001f); // 100 Hz
+    private MadgwickFilter madgwick = new MadgwickFilter(0.01f); // 100 Hz
     private float ax, ay, az, gx, gy, gz, mx, my, mz;
 
     MadgwickSensorDataProvider(Context context1, SensorManager sensorManager, UdpPacketHandler udpClient_v, AppStatus logger) throws Exception {
@@ -80,13 +80,6 @@ public class MadgwickSensorDataProvider implements SensorDataProvider {
                 .newScheduledThreadPool(10);
 
         self = scheduler.scheduleWithFixedDelay(() -> {
-            madgwick.update(gx, gy, gz, ax, ay, az, mx, my, mz);
-            float[] quaternion = new float[4];
-            quaternion[0] = madgwick.q0;
-            quaternion[1] = madgwick.q1;
-            quaternion[2] = madgwick.q2;
-            quaternion[3] = madgwick.q3;
-            udpClient.sendRotationData(quaternion);
         }, 1000, 10, TimeUnit.MILLISECONDS); // every 10 ms. initial delay 1 s
     }
 
@@ -98,6 +91,8 @@ public class MadgwickSensorDataProvider implements SensorDataProvider {
 
     boolean isInitialRotationSet = false;
     boolean hasInitialAccelerometer = false;
+    long timestamp = 0;
+
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
@@ -106,16 +101,28 @@ public class MadgwickSensorDataProvider implements SensorDataProvider {
             gx = event.values[0];
             gy = event.values[1];
             gz = event.values[2];
+            if (isInitialRotationSet) {
+                float dt = (event.timestamp - timestamp) * 1e-9f;
+                madgwick.update(gx, gy, gz, ax, ay, az, mx, my, mz, dt);
+                float[] quaternion = new float[4];
+                quaternion[0] = madgwick.q0;
+                quaternion[1] = madgwick.q1;
+                quaternion[2] = madgwick.q2;
+                quaternion[3] = madgwick.q3;
+                udpClient.sendRotationData(quaternion);
+                timestamp = event.timestamp;
+            }
         } else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
             mx = event.values[0];
             my = event.values[1];
             mz = event.values[2];
             if (!isInitialRotationSet && hasInitialAccelerometer) {
-                Quaternion q = RotationUtil.getOrientationVectorFromAccelerationMagnetic(new float[] {ax, ay, az}, new float[] {mx, my, mz});
+                Quaternion q = RotationUtil.getOrientationVectorFromAccelerationMagnetic(new float[]{ax, ay, az}, new float[]{mx, my, mz});
                 madgwick.q0 = (float) q.getQ0();
                 madgwick.q1 = (float) q.getQ1();
                 madgwick.q2 = (float) q.getQ2();
                 madgwick.q3 = (float) q.getQ3();
+                timestamp = event.timestamp;
                 isInitialRotationSet = true;
             }
         } else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
