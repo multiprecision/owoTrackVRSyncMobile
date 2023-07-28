@@ -1,14 +1,10 @@
 <resources>
-    <string name="app_name">owoTrackVR</string>
-    <string name="introdution">
-    </string>
+    <string name="app_name">rawrTrack</string>
 
     <string name="sleep_warning">
         This app may fail to run in the background or with the screen off on some devices.
         Please visit https://dontkillmyapp.com/ to see solutions for your device.
     </string>
-
-    <string name="remote_service_started" />
 
     <string name="sensors_missing_all">
         Unfortunately, your phone lacks the necessary sensors for this app to function.

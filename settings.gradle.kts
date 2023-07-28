@@ -14,7 +14,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "owoTrack"
+rootProject.name = "rawrTrack"
 include("owoTrackLib")
 include("owoTrackMobile")
 include("owoTrackWear")

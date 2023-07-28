@@ -25,16 +25,22 @@ import org.owoTrack.HandshakeHandler;
 import org.owoTrack.Mobile.ui.ConnectFragment;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static Map<String, Boolean> sensorExist = new HashMap<>();
+    public static Map<String, Boolean> sensorExist = new LinkedHashMap<>();
+    public static Map<String, Integer> sensorMinDelay = new LinkedHashMap<>();
     public static NavController contr;
     private static String missingSensorMessage = "";
 
     public static boolean getSensorExists(String type) {
         return Boolean.TRUE.equals(sensorExist.get(type));
+    }
+
+    public static Integer getSensorMinDelay(String type) {
+        return sensorMinDelay.get(type);
     }
 
     public static boolean missingRequiredSensor() {
@@ -48,12 +54,35 @@ public class MainActivity extends AppCompatActivity {
     private void fillSensorArray() {
         SensorManager man = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
-        sensorExist.put("TYPE_ROTATION_VECTOR", man.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) != null);
-        sensorExist.put("TYPE_GAME_ROTATION_VECTOR", man.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR) != null);
-        sensorExist.put("TYPE_LINEAR_ACCELERATION", man.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null);
-        sensorExist.put("TYPE_GYROSCOPE", man.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null);
-        sensorExist.put("TYPE_ACCELEROMETER", man.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null);
-        sensorExist.put("TYPE_MAGNETIC_FIELD", man.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null);
+        Sensor s0 = man.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        sensorExist.put("TYPE_ROTATION_VECTOR", s0 != null);
+        if (s0 != null)
+            sensorMinDelay.put("TYPE_ROTATION_VECTOR", s0.getMinDelay());
+
+        Sensor s1 = man.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
+        sensorExist.put("TYPE_GAME_ROTATION_VECTOR", s1 != null);
+        if (s1 != null)
+            sensorMinDelay.put("TYPE_GAME_ROTATION_VECTOR", s1.getMinDelay());
+
+        Sensor s2 = man.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        sensorExist.put("TYPE_LINEAR_ACCELERATION", s2 != null);
+        if (s2 != null)
+            sensorMinDelay.put("TYPE_LINEAR_ACCELERATION", s2.getMinDelay());
+
+        Sensor s3 = man.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        sensorExist.put("TYPE_GYROSCOPE", s3 != null);
+        if (s3 != null)
+            sensorMinDelay.put("TYPE_GYROSCOPE", s3.getMinDelay());
+
+        Sensor s4 = man.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorExist.put("TYPE_ACCELEROMETER", s4 != null);
+        if (s4 != null)
+            sensorMinDelay.put("TYPE_ACCELEROMETER", s4.getMinDelay());
+
+        Sensor s5 = man.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        sensorExist.put("TYPE_MAGNETIC_FIELD", s5 != null);
+        if (s5 != null)
+            sensorMinDelay.put("TYPE_MAGNETIC_FIELD", s5.getMinDelay());
 
         missingSensorMessage = "";
 
@@ -108,7 +137,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         ensureUUIDSet();
         fillSensorArray();
 

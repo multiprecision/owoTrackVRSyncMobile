@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <integer name="rotation_vector">0</integer>
-    <integer name="linear_acceleration">1</integer>
-</resources>

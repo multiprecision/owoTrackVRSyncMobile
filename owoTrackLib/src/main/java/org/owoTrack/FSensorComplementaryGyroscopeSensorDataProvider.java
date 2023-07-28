@@ -11,8 +11,6 @@ import com.kircherelectronics.fsensor.observer.SensorSubject;
 public class FSensorComplementaryGyroscopeSensorDataProvider implements SensorDataProvider {
     UdpPacketHandler udpClient;
 
-    private Sensor accelSensor;
-
     private SensorManager sensorManager;
     private Handler mHandler;
 
@@ -29,16 +27,12 @@ public class FSensorComplementaryGyroscopeSensorDataProvider implements SensorDa
         fSensor = new ComplementaryGyroscopeSensor1(context1);
         //fSensor.setFSensorComplimentaryTimeConstant(0.5f);
         this.sensorManager = sensorManager;
-        accelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-        if (accelSensor == null)
-            logger.update("Linear Acceleration sensor could not be found, this data will be unavailable.");
         udpClient = udpClient_v;
     }
 
     @Override
     public void register() {
         mHandler = new Handler();
-        sensorManager.registerListener(this, accelSensor, SensorManager.SENSOR_DELAY_FASTEST, mHandler);
         fSensor.register(sensorObserver);
         fSensor.start();
     }
@@ -52,9 +46,6 @@ public class FSensorComplementaryGyroscopeSensorDataProvider implements SensorDa
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-            udpClient.sendAcceleration(event.values);
-        }
     }
 
     @Override

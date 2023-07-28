@@ -77,6 +77,7 @@ public class TrackingService extends Service {
         client = new UdpPacketHandler(stat, this);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         int sensorType = preferences.getInt("sensor_type", 0);
+        float beta = preferences.getFloat("madgwick_beta", 0.033f);
         SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         try {
             switch (sensorType) {
@@ -94,7 +95,7 @@ public class TrackingService extends Service {
                     sensorDataProvider = new FSensorKalmanGyroscopeSensorDataProvider(getApplicationContext(), sensorManager, client, stat);
                     break;
                 case 4:
-                    sensorDataProvider = new MadgwickSensorDataProvider(getApplicationContext(), sensorManager, client, stat);
+                    sensorDataProvider = new MadgwickSensorDataProvider(beta, sensorManager, client, stat);
                     break;
             }
         } catch (Exception e) {
@@ -250,9 +251,9 @@ public class TrackingService extends Service {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         Notification notification = new NotificationCompat.Builder(this, "NOTIFICATION_CHANNEL_ID")
-                .setContentTitle("owoTrackVR")
-                .setTicker("owoTrackVR")
-                .setContentText("owoTrack service is running")
+                .setContentTitle("rawrTrack")
+                .setTicker("rawrTrack")
+                .setContentText("rawrTrack service is running")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .addAction(0, "Stop", pendingIntent)
                 .setOngoing(true).build();

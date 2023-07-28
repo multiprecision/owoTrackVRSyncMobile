@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -95,33 +97,46 @@ public class ConnectFragment extends GenericBindingFragment {
         ipAddrTxt = curr_view.findViewById(R.id.editIP);
         portTxt = curr_view.findViewById(R.id.editPort);
 
-        if (MainActivity.missingRequiredSensor()) {
-            connect_button.setEnabled(false);
-            ipAddrTxt.setEnabled(false);
-            portTxt.setEnabled(false);
+        SharedPreferences prefs = getSharedPreferences();
+        AutoCompleteTextView sensorTextView = curr_view.findViewById(R.id.input_sensor_type);
+        String[] sensorArray = requireContext().getResources().getStringArray(R.array.sensor_type_dropdown);
+        ArrayAdapter<String> sensorAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, sensorArray);
+        sensorTextView.setAdapter(sensorAdapter);
+        sensorTextView.setOnItemClickListener((parent, view, position, id) -> prefs.edit().putInt("sensor_type", position).apply());
+        int savedSensorType = prefs.getInt("sensor_type", 0);
+        sensorTextView.setText(sensorArray[savedSensorType], false);
+        sensorTextView.setThreshold(Integer.MAX_VALUE);
 
-            TextView statusText = curr_view.findViewById(R.id.statusText);
-            statusText.setText(R.string.sensors_missing_all);
-        } else {
-            SharedPreferences prefs = getSharedPreferences();
-            AutoCompleteTextView sensorTextView = curr_view.findViewById(R.id.input_sensor_type);
-            String[] sensorArray = requireContext().getResources().getStringArray(R.array.sensor_type_dropdown);
-            ArrayAdapter<String> sensorAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, sensorArray);
-            sensorTextView.setAdapter(sensorAdapter);
-            sensorTextView.setOnItemClickListener((parent, view, position, id) -> prefs.edit().putInt("sensor_type", position).apply());
-            int savedSensorType = prefs.getInt("sensor_type", 0);
-            sensorTextView.setText(sensorArray[savedSensorType], false);
-            sensorTextView.setThreshold(Integer.MAX_VALUE);
+        ipAddrTxt.setText(prefs.getString("ip_address", ""));
+        portTxt.setText(String.valueOf(prefs.getInt("port", 6969)));
 
-            ipAddrTxt.setText(prefs.getString("ip_address", ""));
-            portTxt.setText(String.valueOf(prefs.getInt("port", 6969)));
+        EditText madgwickBetaText = curr_view.findViewById(R.id.input_madgwick_beta);
 
-            connect_button.setOnClickListener(v -> onConnect(false));
+        madgwickBetaText.setText(String.valueOf(prefs.getFloat("madgwick_beta", 0.033f)));
+        madgwickBetaText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
-            prefs.registerOnSharedPreferenceChangeListener(listener);
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
-            onConnectionStatus(TrackingService.isInstanceCreated());
-        }
+            @Override
+            public void afterTextChanged(Editable s) {
+                try {
+                    float beta = Float.parseFloat(s.toString());
+                    prefs.edit().putFloat("madgwick_beta", beta).apply();
+                } catch (Exception ignored) {
+                }
+            }
+        });
+
+        connect_button.setOnClickListener(v -> onConnect(false));
+
+        prefs.registerOnSharedPreferenceChangeListener(listener);
+
+        onConnectionStatus(TrackingService.isInstanceCreated());
 
         return curr_view;
     }

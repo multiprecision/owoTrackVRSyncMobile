@@ -14,18 +14,12 @@
         android:orientation="vertical"
         android:showDividers="middle">
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:text="owo"
-            android:textSize="24sp" />
 
         <TextView
             android:id="@+id/sleepWarningText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:text="@string/sleep_warning" />
 
         <TextView
@@ -35,68 +29,18 @@
             android:text="" />
 
         <LinearLayout
+            android:id="@+id/layout_sensor_info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:baselineAligned="false"
             android:orientation="vertical"
-            android:paddingTop="4pt">
-
-            <androidx.fragment.app.FragmentContainerView
-                android:id="@+id/fragment_type_rotation_vector"
-                android:name="org.owoTrack.Mobile.ui.SensorInfoFragment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:sensorName="TYPE_ROTATION_VECTOR" />
-
-            <androidx.fragment.app.FragmentContainerView
-                android:id="@+id/fragment_type_game_rotation_vector"
-                android:name="org.owoTrack.Mobile.ui.SensorInfoFragment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:sensorName="TYPE_GAME_ROTATION_VECTOR" />
-
-
-            <androidx.fragment.app.FragmentContainerView
-                android:id="@+id/fragment_type_linear_acceleration"
-                android:name="org.owoTrack.Mobile.ui.SensorInfoFragment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:sensorName="TYPE_LINEAR_ACCELERATION" />
-
-            <androidx.fragment.app.FragmentContainerView
-                android:id="@+id/fragment_type_gyroscope"
-                android:name="org.owoTrack.Mobile.ui.SensorInfoFragment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:sensorName="TYPE_GYROSCOPE" />
-
-            <androidx.fragment.app.FragmentContainerView
-                android:id="@+id/fragment_type_accelerometer"
-                android:name="org.owoTrack.Mobile.ui.SensorInfoFragment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:sensorName="TYPE_ACCELEROMETER" />
-
-            <androidx.fragment.app.FragmentContainerView
-                android:id="@+id/fragment_type_magnetic_field"
-                android:name="org.owoTrack.Mobile.ui.SensorInfoFragment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:sensorName="TYPE_MAGNETIC_FIELD" />
-        </LinearLayout>
-
+            android:paddingTop="8dp" />
 
         <Button
             android:id="@+id/autoconnectButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Auto-Connect" />
+            android:text="Auto Connect" />
 
     </LinearLayout>
 </ScrollView>
