@@ -118,9 +118,12 @@ public class ConnectFragment extends GenericBindingFragment {
         sensorTextView.setText(sensorArray[savedSensorType], false);
         sensorTextView.setThreshold(Integer.MAX_VALUE);
 
+        madgwickInput.setVisibility(savedSensorType == 4 ? View.VISIBLE : View.GONE);
+        madgwickInputLayout.setVisibility(savedSensorType == 4 ? View.VISIBLE : View.GONE);
+        madgwickText.setVisibility(savedSensorType == 4 ? View.VISIBLE : View.GONE);
+
         ipAddrTxt.setText(prefs.getString("ip_address", ""));
         portTxt.setText(String.valueOf(prefs.getInt("port", 6969)));
-
 
         madgwickInput.setText(String.valueOf(prefs.getFloat("madgwick_beta", 0.033f)));
         madgwickInput.addTextChangedListener(new TextWatcher() {
