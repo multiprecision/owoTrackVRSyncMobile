@@ -26,7 +26,7 @@ public class ComplementaryGyroscopeSensor1 implements FSensor {
 
     private OrientationFusedComplementary1 orientationFusionComplimentary;
 
-    private int sensorDelay = SensorManager.SENSOR_DELAY_FASTEST;
+    private int sensorDelay = 10_000;
     private int sensorType = Sensor.TYPE_GYROSCOPE;
 
     private final SensorSubject sensorSubject;

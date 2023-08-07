@@ -28,7 +28,7 @@ public class RotationVectorSensorDataProvider implements SensorDataProvider {
     @Override
     public void register() {
         mHandler = new Handler();
-        sensorManager.registerListener(this, rotationSensor, SensorManager.SENSOR_DELAY_FASTEST, mHandler);
+        sensorManager.registerListener(this, rotationSensor, 10_000, mHandler);
     }
 
     @Override

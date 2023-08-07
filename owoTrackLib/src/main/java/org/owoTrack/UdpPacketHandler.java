@@ -43,7 +43,7 @@ class UdpPacket {
 
 
     static final int RECEIVE_HEARTBEAT = 1;
-    static final int RECIEVE_VIBRATE = 2;
+    static final int RECEIVE_VIBRATE = 2;
 
 
 }
@@ -110,20 +110,8 @@ public class UdpPacketHandler {
 
     // from https://stackoverflow.com/questions/3291655/get-battery-level-and-state-in-android
     public static int getBatteryPercentage(Context context) {
-        if (Build.VERSION.SDK_INT >= 21) {
-            BatteryManager bm = (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE);
-            return bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-        } else {
-            IntentFilter iFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-            Intent batteryStatus = context.registerReceiver(null, iFilter);
-
-            int level = batteryStatus != null ? batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) : -1;
-            int scale = batteryStatus != null ? batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1) : -1;
-
-            double batteryPct = level / (double) scale;
-
-            return (int) (batteryPct * 100);
-        }
+        BatteryManager bm = (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE);
+        return bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
     }
 
     public boolean setTgt(String ip, int port) {
@@ -319,7 +307,7 @@ public class UdpPacketHandler {
                 break;
             }
 
-            case UdpPacket.RECIEVE_VIBRATE: {
+            case UdpPacket.RECEIVE_VIBRATE: {
                 // vibrate
                 float duration_s = buff.getFloat();
                 float frequency = buff.getFloat();
@@ -483,6 +471,36 @@ public class UdpPacketHandler {
         buff.putFloat(quaternionWXYZ[2]);
         buff.putFloat(quaternionWXYZ[3]);
         buff.putFloat(quaternionWXYZ[0]);
+
+        buff.put((byte) 0); // calibrationInfo
+        if (!sendPacket(buff, bytes)) return;
+
+        packet_id++;
+
+        num_packetsend++;
+        last_packetsend_time = System.currentTimeMillis();
+    }
+
+    public void sendRotationData(float w, float x, float y, float z) {
+
+        if (!isConnected()) return;
+
+        int bytes = 12 + 2 + 4 * 4 + 1; // 12b header (int + long)  + floats (4b each)
+
+        // DATA_TYPE_NORMAL = 1
+        ByteBuffer buff = ByteBuffer.allocate(bytes);
+        buff.putInt(UdpPacket.ROTATION_DATA);
+        buff.putLong(packet_id);
+
+        buff.put((byte) 0); // sensorId
+        buff.put((byte) 1); // DATA_TYPE_NORMAL
+        // SlimeVR server format is (x, y, z, w)
+        // Android format is (w, x, y, z)
+
+        buff.putFloat(x);
+        buff.putFloat(y);
+        buff.putFloat(z);
+        buff.putFloat(w);
 
         buff.put((byte) 0); // calibrationInfo
         if (!sendPacket(buff, bytes)) return;

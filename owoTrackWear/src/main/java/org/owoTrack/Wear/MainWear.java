@@ -298,7 +298,7 @@ public class MainWear extends Activity {
 
         if ((service_v != null) && (service_v.is_running())) {
             onSetStatus("Killing service...");
-            Intent intent = new Intent("kill-ze-service");
+            Intent intent = new Intent("kill_service");
             this.sendBroadcast(intent);
 
             setConnectedStatus(false, false);

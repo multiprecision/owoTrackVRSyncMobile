@@ -63,7 +63,7 @@ public class TrackingService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if ((intent == null) || (intent.getExtras() == null)) {
-            foregroundstuff();
+            startForeground();
             return START_STICKY;
         }
         Bundle data = intent.getExtras();
@@ -71,7 +71,7 @@ public class TrackingService extends Service {
         int port_no = data.getInt("port_no");
 
         System.out.println("Start command");
-        foregroundstuff();
+        startForeground();
 
         stat = new AppStatus(this);
         client = new UdpPacketHandler(stat, this);
@@ -238,16 +238,16 @@ public class TrackingService extends Service {
 
     }
 
-    private void foregroundstuff() {
+    private void startForeground() {
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             nm.createNotificationChannel(new NotificationChannel("NOTIFICATION_CHANNEL_ID", "Foreground Service", NotificationManager.IMPORTANCE_DEFAULT));
         }
 
-        registerReceiver(broadcastReceiver, new IntentFilter("kill-ze-service"));
+        registerReceiver(broadcastReceiver, new IntentFilter("kill_service"));
 
-        Intent intent = new Intent("kill-ze-service");
+        Intent intent = new Intent("kill_service");
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         Notification notification = new NotificationCompat.Builder(this, "NOTIFICATION_CHANNEL_ID")

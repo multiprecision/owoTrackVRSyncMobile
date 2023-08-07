@@ -19,6 +19,8 @@ import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 
+import com.google.android.material.textfield.TextInputLayout;
+
 import org.owoTrack.Mobile.MainActivity;
 import org.owoTrack.Mobile.R;
 import org.owoTrack.TrackingService;
@@ -97,12 +99,21 @@ public class ConnectFragment extends GenericBindingFragment {
         ipAddrTxt = curr_view.findViewById(R.id.editIP);
         portTxt = curr_view.findViewById(R.id.editPort);
 
+        EditText madgwickInput = curr_view.findViewById(R.id.input_madgwick_beta);
+        TextInputLayout madgwickInputLayout = curr_view.findViewById(R.id.input_layout_madgwick_beta);
+        TextView madgwickText = curr_view.findViewById(R.id.text_madgwick_beta);
+
         SharedPreferences prefs = getSharedPreferences();
         AutoCompleteTextView sensorTextView = curr_view.findViewById(R.id.input_sensor_type);
         String[] sensorArray = requireContext().getResources().getStringArray(R.array.sensor_type_dropdown);
         ArrayAdapter<String> sensorAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, sensorArray);
         sensorTextView.setAdapter(sensorAdapter);
-        sensorTextView.setOnItemClickListener((parent, view, position, id) -> prefs.edit().putInt("sensor_type", position).apply());
+        sensorTextView.setOnItemClickListener((parent, view, position, id) -> {
+            prefs.edit().putInt("sensor_type", position).apply();
+            madgwickInput.setVisibility(position == 4 ? View.VISIBLE : View.GONE);
+            madgwickInputLayout.setVisibility(position == 4 ? View.VISIBLE : View.GONE);
+            madgwickText.setVisibility(position == 4 ? View.VISIBLE : View.GONE);
+        });
         int savedSensorType = prefs.getInt("sensor_type", 0);
         sensorTextView.setText(sensorArray[savedSensorType], false);
         sensorTextView.setThreshold(Integer.MAX_VALUE);
@@ -110,10 +121,9 @@ public class ConnectFragment extends GenericBindingFragment {
         ipAddrTxt.setText(prefs.getString("ip_address", ""));
         portTxt.setText(String.valueOf(prefs.getInt("port", 6969)));
 
-        EditText madgwickBetaText = curr_view.findViewById(R.id.input_madgwick_beta);
 
-        madgwickBetaText.setText(String.valueOf(prefs.getFloat("madgwick_beta", 0.033f)));
-        madgwickBetaText.addTextChangedListener(new TextWatcher() {
+        madgwickInput.setText(String.valueOf(prefs.getFloat("madgwick_beta", 0.033f)));
+        madgwickInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
@@ -164,7 +174,7 @@ public class ConnectFragment extends GenericBindingFragment {
     private void onConnect(boolean auto) {
         if ((service_v != null) && (service_v.is_running())) {
             onSetStatus("Killing service...");
-            Intent intent = new Intent("kill-ze-service");
+            Intent intent = new Intent("kill_service");
             getContext().sendBroadcast(intent);
             return;
         }

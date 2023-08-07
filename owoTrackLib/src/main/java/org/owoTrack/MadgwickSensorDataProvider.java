@@ -52,7 +52,6 @@ public class MadgwickSensorDataProvider implements SensorDataProvider {
 
     private boolean isInitialRotationSet = false;
     private long timestamp = 0;
-    private boolean sendSwitch = false;
 
     MadgwickSensorDataProvider(float beta, SensorManager sensorManager, UdpPacketHandler udpClient_v, AppStatus logger) throws Exception {
         madgwick = new MadgwickFilter(beta);
@@ -60,7 +59,6 @@ public class MadgwickSensorDataProvider implements SensorDataProvider {
         magneticFieldSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         gyroscopeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        accelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         if (accelSensor == null) logger.update("Linear Acceleration sensor could not be found, this data will be unavailable.");
         udpClient = udpClient_v;
     }
@@ -68,11 +66,9 @@ public class MadgwickSensorDataProvider implements SensorDataProvider {
     @Override
     public void register() {
         mHandler = new Handler();
-        sensorManager.registerListener(this, magneticFieldSensor, SensorManager.SENSOR_DELAY_FASTEST, mHandler);
-        sensorManager.registerListener(this, gyroscopeSensor, SensorManager.SENSOR_DELAY_FASTEST, mHandler);
-        sensorManager.registerListener(this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST, mHandler);
-        sensorManager.registerListener(this, accelSensor, SensorManager.SENSOR_DELAY_FASTEST, mHandler);
-
+        sensorManager.registerListener(this, magneticFieldSensor, 10_000, mHandler);
+        sensorManager.registerListener(this, gyroscopeSensor, 10_000, mHandler);
+        sensorManager.registerListener(this, accelerometerSensor, 10_000, mHandler);
     }
 
     @Override
@@ -89,17 +85,7 @@ public class MadgwickSensorDataProvider implements SensorDataProvider {
             if (isInitialRotationSet) {
                 float dt = (event.timestamp - timestamp) * 1e-9f;
                 madgwick.update(gx, gy, gz, ax, ay, az, mx, my, mz, dt);
-                if (sendSwitch) {
-                    float[] quaternion = new float[4];
-                    quaternion[0] = madgwick.q0;
-                    quaternion[1] = madgwick.q1;
-                    quaternion[2] = madgwick.q2;
-                    quaternion[3] = madgwick.q3;
-                    udpClient.sendRotationData(quaternion); // limit sending rotation data
-                    sendSwitch = false;
-                } else {
-                    sendSwitch = true;
-                }
+                udpClient.sendRotationData(madgwick.q0, madgwick.q1, madgwick.q2, madgwick.q3);
                 timestamp = event.timestamp;
             }
         } else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
@@ -121,7 +107,6 @@ public class MadgwickSensorDataProvider implements SensorDataProvider {
             }
         }
     }
-
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
