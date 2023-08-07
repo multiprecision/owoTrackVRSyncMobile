@@ -35,15 +35,15 @@ public class HandshakeHandler {
     }
 
     public static void insert_slime_info(ByteBuffer buff) {
-        final int boardType = 0;
+        final int boardType = 13;
         final int imuType = 0;
-        final int mcuType = 0;
+        final int mcuType = 3;
 
         final int[] imuInfo = {0, 0, 0};
 
         final int firmwareBuild = 8;
 
-        final byte[] firmware = {'o', 'w', 'o', 'T', 'r', 'a', 'c', 'k', 'X'}; // 9 bytes
+        final byte[] firmware = {'r', 'a', 'w', 'r', 'T', 'r', 'a', 'c', 'k'}; // 9 bytes
 
         buff.putInt(boardType); // 4 bytes
         buff.putInt(imuType);   // 4 bytes
