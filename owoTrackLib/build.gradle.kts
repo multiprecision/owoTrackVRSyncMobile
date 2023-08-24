@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    compileSdk = 33
+    compileSdk = 34
     buildToolsVersion = "34.0.0"
 
     defaultConfig {
-        minSdk = 23
+        minSdk = 24
     }
 
     buildTypes {
@@ -37,7 +37,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("com.google.android.material:material:1.9.0")
 
-    val nav_version = "2.6.0"
+    val nav_version = "2.7.0"
 
     implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
     implementation("androidx.navigation:navigation-ui-ktx:$nav_version")

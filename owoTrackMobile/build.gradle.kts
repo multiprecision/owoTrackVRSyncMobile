@@ -4,15 +4,15 @@ plugins {
 }
 
 android {
-    compileSdk = 33
+    compileSdk = 34
     buildToolsVersion = "34.0.0"
 
     defaultConfig {
         applicationId = "org.ovrgyrotrackersync"
-        minSdk = 23
-        targetSdk = 33
-        versionCode = 19
-        versionName = "9.7"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 100
+        versionName = "10.0.0"
     }
     buildTypes {
         getByName("release") {
@@ -40,7 +40,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("com.google.android.material:material:1.9.0")
 
-    val nav_version = "2.6.0"
+    val nav_version = "2.7.0"
     implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
     implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
 

@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    compileSdk = 33
+    compileSdk = 34
     buildToolsVersion = "34.0.0"
 
     defaultConfig {
         minSdk = 25
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 200
         versionName = "20.0.0"
 
@@ -45,7 +45,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-wearable:18.0.0")
     implementation("androidx.percentlayout:percentlayout:1.0.0")
     implementation("androidx.recyclerview:recyclerview:1.3.1")
-    implementation("androidx.wear:wear:1.2.0")
+    implementation("androidx.wear:wear:1.3.0")
     implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
     implementation("androidx.preference:preference:1.2.1")
 
