@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 class UdpPacket {
@@ -72,7 +73,7 @@ public class UdpPacketHandler {
     private Runnable on_connection_death;
     private boolean big_endian = true;
     private ArrayBlockingQueue<DatagramPacket> packets = new ArrayBlockingQueue<DatagramPacket>(64);
-    private long packet_id = 0;
+    private AtomicLong packet_id = new AtomicLong(0);
 
     UdpPacketHandler(AppStatus status_v, Service s) {
         status = status_v;
@@ -168,7 +169,7 @@ public class UdpPacketHandler {
 
         on_connection_death = on_death;
         socket.disconnect();
-        packet_id = 0;
+        packet_id.set(0);
         if (ip_addr == null) {
             return false;
         }
@@ -406,7 +407,7 @@ public class UdpPacketHandler {
 
         ByteBuffer buff = ByteBuffer.allocate(len);
         buff.putInt(UdpPacket.BATTERY_LEVEL);
-        buff.putLong(packet_id++);
+        buff.putLong(packet_id.getAndIncrement());
         buff.putFloat(battery);
 
         sendPacket(buff, len);
@@ -460,7 +461,7 @@ public class UdpPacketHandler {
         // DATA_TYPE_NORMAL = 1
         ByteBuffer buff = ByteBuffer.allocate(bytes);
         buff.putInt(UdpPacket.ROTATION_DATA);
-        buff.putLong(packet_id);
+        buff.putLong(packet_id.getAndIncrement());
 
         buff.put((byte) 0); // sensorId
         buff.put((byte) 1); // DATA_TYPE_NORMAL
@@ -475,7 +476,6 @@ public class UdpPacketHandler {
         buff.put((byte) 0); // calibrationInfo
         if (!sendPacket(buff, bytes)) return;
 
-        packet_id++;
 
         num_packetsend++;
         last_packetsend_time = System.currentTimeMillis();
@@ -490,7 +490,7 @@ public class UdpPacketHandler {
         // DATA_TYPE_NORMAL = 1
         ByteBuffer buff = ByteBuffer.allocate(bytes);
         buff.putInt(UdpPacket.ROTATION_DATA);
-        buff.putLong(packet_id);
+        buff.putLong(packet_id.getAndIncrement());
 
         buff.put((byte) 0); // sensorId
         buff.put((byte) 1); // DATA_TYPE_NORMAL
@@ -505,7 +505,6 @@ public class UdpPacketHandler {
         buff.put((byte) 0); // calibrationInfo
         if (!sendPacket(buff, bytes)) return;
 
-        packet_id++;
 
         num_packetsend++;
         last_packetsend_time = System.currentTimeMillis();
@@ -518,7 +517,7 @@ public class UdpPacketHandler {
 
         ByteBuffer buff = ByteBuffer.allocate(bytes);
         buff.putInt(UdpPacket.ACCEL);
-        buff.putLong(packet_id);
+        buff.putLong(packet_id.getAndIncrement());
 
         for (int i = 0; i < 3; i++) {
             buff.putFloat(accel[i]);
@@ -527,7 +526,6 @@ public class UdpPacketHandler {
 
         if (!sendPacket(buff, bytes)) return;
 
-        packet_id++;
     }
 
     public void stop() {
