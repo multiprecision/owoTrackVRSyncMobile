@@ -42,7 +42,7 @@ public class KalmanGyroscopeSensor1 implements FSensor {
 
     private OrientationFusedKalman1 orientationFusionKalman;
 
-    private int sensorDelay = 10_000;
+    private int sensorDelay = 20_000;
     private int sensorType = Sensor.TYPE_GYROSCOPE;
 
     private final SensorSubject sensorSubject;

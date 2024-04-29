@@ -66,9 +66,9 @@ public class MadgwickSensorDataProvider implements SensorDataProvider {
     @Override
     public void register() {
         mHandler = new Handler();
-        sensorManager.registerListener(this, magneticFieldSensor, 10_000, mHandler);
-        sensorManager.registerListener(this, gyroscopeSensor, 10_000, mHandler);
-        sensorManager.registerListener(this, accelerometerSensor, 10_000, mHandler);
+        sensorManager.registerListener(this, magneticFieldSensor, 20_000, mHandler);
+        sensorManager.registerListener(this, gyroscopeSensor, 20_000, mHandler);
+        sensorManager.registerListener(this, accelerometerSensor, 20_000, mHandler);
     }
 
     @Override

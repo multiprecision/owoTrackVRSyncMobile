@@ -40,7 +40,7 @@ android {
 
 dependencies {
     implementation(project(":owoTrackLib"))
-    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.core:core-ktx:1.13.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.gms:play-services-wearable:18.1.0")
     implementation("androidx.percentlayout:percentlayout:1.0.0")
